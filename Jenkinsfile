@@ -3,10 +3,9 @@ pipeline {
 
   environment {
     NAME = "solar-system"
+    IMAGE_NAME = 'bigzaza/argocd'
+    IMAGE_TAG = "${IMAGE_NAME}:${env.GIT_COMMIT}"
     VERSION = "${env.BUILD_ID}-${env.GIT_COMMIT}"
-    IMAGE_REPO = "siddharth67"
-    ARGOCD_TOKEN = credentials('argocd-token')
-    GITEA_TOKEN = credentials('gitea-token')
   }
   
   stages {
@@ -17,20 +16,34 @@ pipeline {
       }
     }
 
-    stage('Build Image') {
-      steps {
-            sh "docker build -t ${NAME} ."
-            sh "docker tag ${NAME}:latest ${IMAGE_REPO}/${NAME}:${VERSION}"
+    stage('Login to docker hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                sh 'echo ${PASSWORD} | docker login -u ${USERNAME} --password-stdin'}
+                echo 'Login successfully'
+            }
         }
-      }
+    
+    stage('Build Docker Image')
+        {
+            steps
+            {
+                sh 'docker build -t ${IMAGE_TAG} .'
+                echo "Docker image build successfully"
+                sh 'docker image ls'
+                echo "docker image was built successfully"
+                
+            }
+        }
 
-    stage('Push Image') {
-      steps {
-        withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
-          sh 'docker push ${IMAGE_REPO}/${NAME}:${VERSION}'
+        stage('Push Docker Image')
+        {
+            steps
+            {
+                sh 'docker push ${IMAGE_TAG}'
+                echo "Docker image push successfully"
+            }
         }
-      }
-    }
 
     stage('Clone/Pull Repo') {
       steps {
@@ -45,7 +58,7 @@ pipeline {
 
           } else {
             echo 'Repo does not exists - Cloning the repo'
-            sh 'git clone -b feature-gitea http://139.59.21.103:3000/siddharth/gitops-argocd'
+            sh 'git clone -b https://github.com/Big-Zaza/gitops-argocd'
           }
         }
       }
@@ -54,7 +67,7 @@ pipeline {
     stage('Update Manifest') {
       steps {
         dir("gitops-argocd/jenkins-demo") {
-          sh 'sed -i "s#siddharth67.*#${IMAGE_REPO}/${NAME}:${VERSION}#g" deployment.yaml'
+          sh 'sed -i "s/${IMAGE_NAME}:.*:${IMAGE_TAG}/g" deployment.yaml'
           sh 'cat deployment.yaml'
         }
       }
@@ -63,12 +76,12 @@ pipeline {
     stage('Commit & Push') {
       steps {
         dir("gitops-argocd/jenkins-demo") {
-          sh "git config --global user.email 'jenkins@ci.com'"
-          sh 'git remote set-url origin http://$GITEA_TOKEN@139.59.21.103:3000/siddharth/gitops-argocd'
-          sh 'git checkout feature-gitea'
+          sh "git config --global user.email 'ntuijunior1@gmail.com'"
+          sh 'git remote set-url origin '
+          sh 'git checkout main'
           sh 'git add -A'
           sh 'git commit -am "Updated image version for Build - $VERSION"'
-          sh 'git push origin feature-gitea'
+          sh 'git push origin main'
         }
       }
     }
