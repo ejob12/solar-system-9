@@ -86,9 +86,9 @@ pipeline {
       }
     }
 
-    stage('Raise PR') {
+    stage('Successfully deployed to ArgoCD') {
       steps {
-        sh "bash pr.sh"
+        echo "Application has been deployed to ArgoCD"
       }
     } 
   }
