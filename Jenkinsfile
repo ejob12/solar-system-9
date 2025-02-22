@@ -79,7 +79,7 @@ pipeline {
             script {
                 // Set the Git user email and name (ensure these are correct)
                 sh "git config --global user.email 'ntuijunior1@gmail.com'"
-                sh "git config --global user.name 'Big-Zaza'"
+                sh "git config --global user.name 'Big_zaza'"
 
                 // Set the remote URL for the repository (using the GITEA_TOKEN)
                 sh "git remote set-url origin https://github.com/Big-Zaza/gitops-argocd"
