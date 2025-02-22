@@ -76,15 +76,28 @@ pipeline {
     stage('Commit & Push') {
       steps {
         dir("gitops-argocd/jenkins-demo") {
-          sh "git config --global user.email 'ntuijunior1@gmail.com'"
-          sh 'git remote set-url origin '
-          sh 'git checkout main'
-          sh 'git add -A'
-          sh 'git commit -am "Updated image version for Build - $VERSION"'
-          sh 'git push origin main'
+            script {
+                // Set the Git user email and name (ensure these are correct)
+                sh "git config --global user.email 'ntuijunior1@gmail.com'"
+                sh "git config --global user.name 'Ntui Etta'"
+
+                // Set the remote URL for the repository (using the GITEA_TOKEN)
+                sh "git remote set-url origin https://github.com/Big-Zaza/gitops-argocd"
+
+                // Checkout the 'main' branch
+                sh 'git checkout main'
+
+                // Stage all changes and commit them
+                sh 'git add -A'
+                sh 'git commit -am "Updated image version for Build - $VERSION"'
+
+                // Push the changes to the 'main' branch
+                sh 'git push origin main'
+            }
         }
-      }
     }
+}
+
 
     stage('Successfully deployed to ArgoCD') {
       steps {
