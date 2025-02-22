@@ -23,6 +23,7 @@ echo '<!DOCTYPE html>
 			display: flex;
 			align-items: center;
 			justify-content: center;
+                        padding: 50px
 			background: url("https://github.com/Big-Zaza/solar-system-9/raw/branch/main/images/background.png");
 		}
 		
