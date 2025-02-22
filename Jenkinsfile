@@ -73,40 +73,35 @@ pipeline {
       }
     }
 
-    
     stage('Commit & Push') {
-      steps {
+    steps {
         dir("gitops-argocd/jenkins-demo") {
             script {
-                // Set the Git user email and name for the current repository (better than global settings)
-                sh "git config --global user.email 'ntuijunior1@gmail.com'"
-                sh "git config --global user.name 'Big_zaza'"
+                // Set the Git user email and name
+                sh "git config user.email 'ntuijunior1@gmail.com'"
+                sh "git config user.name 'Big_zaza'"
 
-                // Ensure the repository is up to date with the remote 'main' branch before committing
-                sh 'git fetch origin'
+                // Checkout the 'main' branch
                 sh 'git checkout main'
+
+                // Ensure the repository is up to date with the remote 'main' branch
+                sh 'git fetch origin'
                 sh 'git pull origin main'
 
-                // Stage all changes
+                // Stage all changes and commit them
                 sh 'git add -A'
+                sh 'git commit -am "Updated image version for Build - $VERSION"'
 
-                // Check if there are any changes before committing
-                def commitMessage = "Updated image version for Build - ${env.VERSION}"
-                def commitStatus = sh(script: "git diff --cached --quiet || echo 'changes'", returnStdout: true).trim()
-
-                // Commit the changes if there are any staged changes
-                if (commitStatus == 'changes') {
-                    sh "git commit -m '${commitMessage}'"
+                // Push the changes to the 'main' branch using the stored GitHub token
+                withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                    sh "git remote set-url origin https://${GITHUB_TOKEN}@github.com/Big-Zaza/gitops-argocd.git"
                     sh 'git push origin main'
-                } else {
-                    echo "No changes to commit"
                 }
             }
         }
     }
 }
 
-   
     
     stage('Successfully deployed to ArgoCD') {
       steps {
