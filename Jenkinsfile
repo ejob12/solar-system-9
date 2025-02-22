@@ -67,7 +67,7 @@ pipeline {
     stage('Update Manifest') {
       steps {
         dir("gitops-argocd/jenkins-demo") {
-          sh 'sed -i "s|${IMAGE_NAME}:.*|${IMAGE_TAG}|" deployment.yaml'
+          sh 'sed -i "s#${IMAGE_NAME}.*#${IMAGE_TAG}#g" deployment.yaml'
           sh 'cat deployment.yaml'
         }
       }
