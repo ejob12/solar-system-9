@@ -79,8 +79,8 @@ pipeline {
         dir("gitops-argocd/jenkins-demo") {
             script {
                 // Set the Git user email and name for the current repository (better than global settings)
-                sh "git config user.email 'ntuijunior1@gmail.com'"
-                sh "git config user.name 'Big_zaza'"
+                sh "git config --global user.email 'ntuijunior1@gmail.com'"
+                sh "git config --global user.name 'Big_zaza'"
 
                 // Ensure the repository is up to date with the remote 'main' branch before committing
                 sh 'git fetch origin'
